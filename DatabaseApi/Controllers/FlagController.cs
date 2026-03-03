@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using DatabaseApi.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace DatabaseApi.Controllers
 {
@@ -8,12 +9,19 @@ namespace DatabaseApi.Controllers
     [Route("api/[controller]")]
     public class FlagController : ControllerBase
     {
+        private readonly string connectionString;
+
+        public FlagController(IConfiguration configuration)
+        {
+            connectionString = configuration.GetConnectionString("DefaultConnection");
+        }
+
         [HttpGet]
         public IActionResult GetCountries()
         {
             var countries = new List<FlagModel>();
 
-            using (SqlConnection conn = new SqlConnection(DbConfig.ConnectionString))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
 
@@ -41,7 +49,7 @@ namespace DatabaseApi.Controllers
         {
 
 
-            using (SqlConnection conn = new SqlConnection(DbConfig.ConnectionString))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
                 string query = "SELECT TOP 1 Id, CountryName FROM Flags ORDER BY NEWID()";
@@ -70,7 +78,7 @@ namespace DatabaseApi.Controllers
         {
             var countries = new List<FlagModel>();
 
-            using (SqlConnection conn = new SqlConnection(DbConfig.ConnectionString))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
                 string query = "SELECT TOP 4 Id, CountryName FROM Flags ORDER BY NEWID()";
