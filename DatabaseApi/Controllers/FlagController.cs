@@ -17,25 +17,25 @@ namespace DatabaseApi.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetCountries()
+        public async Task<IActionResult> GetCountries()
         {
             var countries = new List<FlagModel>();
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            await using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                conn.Open();
+                await conn.OpenAsync();
 
                 string query = "SELECT Id, CountryName FROM Flags";
 
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                using (SqlDataReader reader = cmd.ExecuteReader())
+                await using (SqlCommand cmd = new SqlCommand(query, conn))
+                await using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                 {
-                    while (reader.Read())
+                    while (await reader.ReadAsync())
                     {
                         countries.Add(new FlagModel
                         {
-                            Id = reader["Id"].ToString(),
-                            CountryName = reader["CountryName"].ToString()
+                            Id = reader.GetString(0),
+                            CountryName = reader.GetString(1)
                         });
                     }
                 }
@@ -45,24 +45,24 @@ namespace DatabaseApi.Controllers
         }
 
         [HttpGet("random")]
-        public IActionResult GetRandomCountry()
+        public async Task<IActionResult> GetRandomCountry()
         {
 
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            await using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                conn.Open();
+                await conn.OpenAsync();
                 string query = "SELECT TOP 1 Id, CountryName FROM Flags ORDER BY NEWID()";
 
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                using (SqlDataReader reader = cmd.ExecuteReader())
+                await using (SqlCommand cmd = new SqlCommand(query, conn))
+                await using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                 {
-                    if (reader.Read())
+                    if (await reader.ReadAsync())
                     {
                         var country = new FlagModel
                         {
-                            Id = reader["Id"].ToString(),
-                            CountryName = reader["CountryName"].ToString()
+                            Id = reader.GetString(0),
+                            CountryName = reader.GetString(1)
                         };
                         return Ok(country);
                     }
@@ -74,26 +74,32 @@ namespace DatabaseApi.Controllers
         }
 
         [HttpGet("quiz")]
-        public IActionResult GetQuiz()
+        public async Task<IActionResult> GetQuiz()
         {
             var countries = new List<FlagModel>();
+            
+            
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            await using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                conn.Open();
+                await conn.OpenAsync();
                 string query = "SELECT TOP 4 Id, CountryName FROM Flags ORDER BY NEWID()";
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                using (SqlDataReader reader = cmd.ExecuteReader())
+                await using (SqlCommand cmd = new SqlCommand(query, conn))
+                await using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                 {
-                    while (reader.Read())
+                    while (await reader.ReadAsync())
                     {
                         countries.Add(new FlagModel
                         {
-                            Id = reader["Id"].ToString(),
-                            CountryName = reader["CountryName"].ToString()
+                            Id = reader.GetString(0),
+                            CountryName = reader.GetString(1)
                         });
                     }
                 }
+
+                if (countries.Count < 4)
+                    return StatusCode(500, "Not enough data for quiz");
+
                 var correct = countries[0];
                 var random = new Random();
                 var shuffled = countries.OrderBy(x => random.Next()).ToList();

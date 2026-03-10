@@ -9,7 +9,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173")
+            policy.WithOrigins("http://localhost:5173", "https://kind-plant-0a6169d10.6.azurestaticapps.net", "https://www.braxtonplacke.com")
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
